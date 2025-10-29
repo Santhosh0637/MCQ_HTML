@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SQL 100 MCQ Quiz — 90min Timer</title>
+  <style>
+    :root{
+      --bg:#f6f9fc; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --danger:#ef4444;
+      --shadow: rgba(16,24,40,0.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root{
+        --bg:#071227; --card:#071a2b; --muted:#9aa6b2; --accent:#60a5fa; --danger:#fb7185;
+        --shadow: rgba(2,6,23,0.6);
+      }
+      body { color: #e6eef8; }
+    }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); margin:0;padding:18px;color:#071127;}
+    .container{max-width:1100px;margin:0 auto}
+    header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+    h1{font-size:1.25rem;margin:0}
+    .meta{color:var(--muted);font-size:0.95rem}
+    #timerBox{margin-left:auto;padding:8px 12px;border-radius:8px;background:var(--card);box-shadow:0 1px 2px var(--shadow);font-weight:700;color:var(--accent)}
+    .controls{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+    button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+    button.secondary{background:#6b7280}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.06)}
+    .stats{margin-left:auto;color:var(--muted)}
+    form{margin-top:8px}
+    .qcard{background:var(--card);border-radius:10px;padding:12px;margin:10px 0;box-shadow:0 1px 2px var(--shadow);border:1px solid rgba(2,6,23,0.04)}
+    .qhead{font-weight:700;margin-bottom:8px}
+    .opts label{display:block;margin:6px 0;padding:8px;border-radius:6px;cursor:pointer}
+    input[type="radio"]{margin-right:8px}
+    .result{display:none;margin-top:14px;padding:14px;border-radius:8px;background:#eef6ff;border:1px solid #cfe3ff}
+    .answer-key{display:none;background:var(--card);padding:12px;border-radius:8px;border:1px solid rgba(2,6,23,0.04);margin-top:12px;max-height:340px;overflow:auto}
+    .footer{margin-top:18px;color:var(--muted);font-size:0.9rem;text-align:center}
+    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start} #timerBox{margin-left:0} .stats{margin-left:0} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>SQL — 100 MCQ Quiz</h1>
+        <div class="meta">Sections: <strong>1–50 Beginner</strong>, <strong>51–75 Intermediate</strong>, <strong>76–100 Advanced</strong></div>
+      </div>
+      <div id="timerBox">Time left: <span id="timerDisplay">90:00</span></div>
+    </header>
+
+    <div class="controls">
+      <button id="submitBtn">Submit Quiz</button>
+      <button id="toggleKeyBtn" class="secondary">Show Answers</button>
+      <button id="clearBtn" class="ghost">Clear Answers</button>
+      <div class="stats">Answered: <span id="answeredCount">0</span> / <span id="totalCount">100</span></div>
+    </div>
+
+    <form id="quizForm" autocomplete="off"></form>
+
+    <div id="result" class="result" role="status" aria-live="polite"></div>
+
+    <div id="answerKey" class="answer-key" aria-hidden="true"></div>
+
+    <div class="footer">Open this file locally in a browser. The timer auto-submits when it reaches 00:00.</div>
+  </div>
+
+  <script>
+/* ==========================
+   Questions array (100 SQL MCQs)
+   Each item: { q: 'question text', opts: ['a) ...','b) ...','c) ...','d) ...'], ans: 'a'|'b'|'c'|'d' }
+   Sections: 1-50 Beginner, 51-75 Intermediate, 76-100 Advanced
+   ========================== */
+
+const QUESTIONS = [
+/* 1-50 Beginner */
+{"q":"1. What does SQL stand for?","opts":["a) Strong Question Language","b) Structured Query Language","c) Sequential Query Logic","d) Simple Query Language"],"ans":"b"},
+{"q":"2. Which SQL statement is used to extract data from a database?","opts":["a) GET","b) SELECT","c) EXTRACT","d) CHOOSE"],"ans":"b"},
+{"q":"3. Which clause is used to filter records?","opts":["a) ORDER BY","b) GROUP BY","c) WHERE","d) HAVING"],"ans":"c"},
+{"q":"4. Which SQL statement is used to update data in a database?","opts":["a) MODIFY","b) CHANGE","c) UPDATE","d) ALTER"],"ans":"c"},
+{"q":"5. Which SQL statement is used to delete data from a table?","opts":["a) REMOVE","b) DELETE","c) DROP","d) CLEAR"],"ans":"b"},
+{"q":"6. Which statement is used to insert new data into a table?","opts":["a) ADD INTO","b) INSERT INTO","c) PUT INTO","d) ADD"],"ans":"b"},
+{"q":"7. What keyword is used to sort the result set in SQL?","opts":["a) SORT","b) ORDER","c) ORDER BY","d) ARRANGE"],"ans":"c"},
+{"q":"8. Which clause groups rows that have the same values?","opts":["a) GROUP BY","b) CLUSTER BY","c) ORDER BY","d) MERGE"],"ans":"a"},
+{"q":"9. Which SQL function is used to count the number of rows?","opts":["a) TOTAL()","b) SUM()","c) COUNT()","d) NUMBER()"],"ans":"c"},
+{"q":"10. Which operator is used to test for NULL values?","opts":["a) = NULL","b) IS NULL","c) EQUAL NULL","d) == NULL"],"ans":"b"},
+{"q":"11. Which SQL command removes a table from a database?","opts":["a) REMOVE TABLE","b) DELETE TABLE","c) DROP TABLE","d) CLEAR TABLE"],"ans":"c"},
+{"q":"12. What does DDL stand for?","opts":["a) Data Definition Language","b) Data Description Language","c) Data Delete Language","d) Data Design Language"],"ans":"a"},
+{"q":"13. What does DML stand for?","opts":["a) Data Manipulation Language","b) Data Model Language","c) Data Mining Language","d) Data Management Language"],"ans":"a"},
+{"q":"14. Which of the following is a DDL command?","opts":["a) INSERT","b) UPDATE","c) CREATE","d) DELETE"],"ans":"c"},
+{"q":"15. Which keyword is used to prevent duplicate values?","opts":["a) DISTINCT","b) UNIQUE","c) DIFFERENT","d) NO DUPLICATE"],"ans":"a"},
+{"q":"16. Which function returns the largest value?","opts":["a) MAX()","b) BIG()","c) TOP()","d) HIGH()"],"ans":"a"},
+{"q":"17. Which function returns the smallest value?","opts":["a) SMALL()","b) LOW()","c) MIN()","d) LEAST()"],"ans":"c"},
+{"q":"18. Which function returns the average value?","opts":["a) TOTAL()","b) AVERAGE()","c) AVG()","d) MEAN()"],"ans":"c"},
+{"q":"19. What is the correct SQL statement to create a database?","opts":["a) CREATE NEW DATABASE test;","b) MAKE DATABASE test;","c) CREATE DATABASE test;","d) NEW DATABASE test;"],"ans":"c"},
+{"q":"20. Which statement is used to remove all records but keep the table structure?","opts":["a) DROP","b) DELETE","c) TRUNCATE","d) REMOVE"],"ans":"c"},
+{"q":"21. Which of the following statements is correct about SQL keywords?","opts":["a) SQL is case-sensitive","b) SQL keywords are case-insensitive","c) SQL queries must be lowercase","d) SQL only works in uppercase"],"ans":"b"},
+{"q":"22. Which command is used to modify a table structure?","opts":["a) MODIFY TABLE","b) CHANGE TABLE","c) UPDATE TABLE","d) ALTER TABLE"],"ans":"d"},
+{"q":"23. Which SQL constraint ensures that all values in a column are different?","opts":["a) CHECK","b) DEFAULT","c) UNIQUE","d) PRIMARY"],"ans":"c"},
+{"q":"24. Which constraint ensures that a column cannot have a NULL value?","opts":["a) CHECK","b) NOT NULL","c) UNIQUE","d) DEFAULT"],"ans":"b"},
+{"q":"25. Which constraint uniquely identifies each record in a table?","opts":["a) UNIQUE","b) PRIMARY KEY","c) FOREIGN KEY","d) DEFAULT"],"ans":"b"},
+{"q":"26. What does a FOREIGN KEY do?","opts":["a) Links two tables together","b) Creates duplicate keys","c) Deletes unrelated rows","d) Copies values between tables"],"ans":"a"},
+{"q":"27. Which command is used to add a new column?","opts":["a) ALTER TABLE ADD COLUMN","b) INSERT COLUMN","c) ADD COLUMN","d) CREATE COLUMN"],"ans":"a"},
+{"q":"28. Which statement creates an index?","opts":["a) CREATE INDEX idx_name ON table(column);","b) MAKE INDEX idx_name;","c) ADD INDEX idx_name;","d) BUILD INDEX table;"],"ans":"a"},
+{"q":"29. Which SQL statement is used to remove an index?","opts":["a) DELETE INDEX","b) DROP INDEX","c) REMOVE INDEX","d) CLEAR INDEX"],"ans":"b"},
+{"q":"30. Which SQL statement returns only unique rows?","opts":["a) UNIQUE","b) DISTINCT","c) DIFFERENT","d) ONLY"],"ans":"b"},
+{"q":"31. Which keyword combines the result of two queries (removes duplicates)?","opts":["a) COMBINE","b) UNION","c) JOIN","d) CONNECT"],"ans":"b"},
+{"q":"32. Which clause is used with GROUP BY to filter groups based on aggregate conditions?","opts":["a) WHERE","b) ORDER BY","c) HAVING","d) DISTINCT"],"ans":"c"},
+{"q":"33. Which operator checks for a range of values?","opts":["a) BETWEEN","b) IN","c) RANGE","d) LIMIT"],"ans":"a"},
+{"q":"34. Which operator checks for multiple possible values?","opts":["a) IN","b) ANY","c) ALL","d) OR"],"ans":"a"},
+{"q":"35. Which JOIN returns rows that have matching values in both tables?","opts":["a) LEFT JOIN","b) RIGHT JOIN","c) INNER JOIN","d) FULL JOIN"],"ans":"c"},
+{"q":"36. Which keyword is used to alias a column or expression in a result set?","opts":["a) RENAME","b) CHANGE","c) AS","d) MODIFY"],"ans":"c"},
+{"q":"37. Which statement creates a new table?","opts":["a) CREATE TABLE table_name (...);","b) NEW TABLE table_name (...);","c) MAKE TABLE table_name (...);","d) BUILD TABLE table_name (...);"],"ans":"a"},
+{"q":"38. What is the default sort order in ORDER BY?","opts":["a) DESC","b) ASC","c) RANDOM","d) ALPHABETICAL"],"ans":"b"},
+{"q":"39. Which function returns the current date in many SQL dialects?","opts":["a) GETDATE()","b) NOW()","c) CURRENT_DATE()","d) TODAY()"],"ans":"c"},
+{"q":"40. Which clause is used to limit the number of rows returned?","opts":["a) LIMIT / TOP / FETCH","b) ROWCOUNT","c) SET ROWS","d) MAXROWS"],"ans":"a"},
+{"q":"41. Which statement is used to change column data type?","opts":["a) ALTER TABLE ... MODIFY COLUMN ...","b) CHANGE TYPE ...","c) UPDATE COLUMN TYPE","d) SET COLUMN TYPE"],"ans":"a"},
+{"q":"42. Which function concatenates strings in many SQL dialects?","opts":["a) CONCAT()","b) JOIN()","c) UNION()","d) MERGE()"],"ans":"a"},
+{"q":"43. Which aggregate function returns the sum of values?","opts":["a) TOTAL()","b) SUM()","c) AGG_SUM()","d) ADD()"],"ans":"b"},
+{"q":"44. Which clause is used to combine rows using an aggregate?","opts":["a) GROUP BY","b) ORDER BY","c) HAVING","d) WINDOW"],"ans":"a"},
+{"q":"45. Which keyword is used to create a view?","opts":["a) CREATE VIEW view_name AS SELECT ...","b) MAKE VIEW view_name SELECT ...","c) NEW VIEW AS ...","d) DEFINE VIEW ..."],"ans":"a"},
+{"q":"46. Which statement is used to create a stored procedure?","opts":["a) CREATE PROCEDURE ...","b) CREATE PROC ...","c) Both a and b depending on DBMS","d) MAKE PROCEDURE ..."],"ans":"c"},
+{"q":"47. Which command is used to commit a transaction?","opts":["a) SAVE","b) COMMIT","c) APPLY","d) FINALIZE"],"ans":"b"},
+{"q":"48. Which command rolls back a transaction to the last commit?","opts":["a) ROLLBACK","b) UNDO","c) CANCEL","d) REVERT"],"ans":"a"},
+{"q":"49. Which clause is used to create conditional logic in SELECT (e.g., CASE)?","opts":["a) IF ... ELSE","b) SWITCH","c) CASE ... WHEN ... THEN ... END","d) CHOOSE"],"ans":"c"},
+{"q":"50. Which statement is commonly used to protect against SQL injection by using parameterization?","opts":["a) String concatenation","b) Prepared statements / parameterized queries","c) Dynamic SQL via exec","d) None of the above"],"ans":"b"},
+
+/* 51-75 Intermediate */
+{"q":"51. What does ACID stand for in database transactions?","opts":["a) Atomicity, Consistency, Isolation, Durability","b) Atomicity, Concurrency, Integrity, Durability","c) Accuracy, Consistency, Isolation, Durability","d) Atomic, Consistent, Isolated, Durable"],"ans":"a"},
+{"q":"52. Which isolation level allows dirty reads?","opts":["a) READ UNCOMMITTED","b) READ COMMITTED","c) REPEATABLE READ","d) SERIALIZABLE"],"ans":"a"},
+{"q":"53. Which isolation level prevents non-repeatable reads but may allow phantom reads?","opts":["a) READ UNCOMMITTED","b) READ COMMITTED","c) REPEATABLE READ","d) SERIALIZABLE"],"ans":"c"},
+{"q":"54. Which SQL construct is used to create Common Table Expressions (CTEs)?","opts":["a) WITH","b) CTE","c) TEMP","d) DEFINE"],"ans":"a"},
+{"q":"55. Which clause returns a sliding window of rows for each partition in a result set?","opts":["a) GROUP BY","b) OVER() with window functions","c) HAVING","d) PARTITION BY only"],"ans":"b"},
+{"q":"56. Which window function assigns a unique sequential integer to rows in a partition?","opts":["a) RANK()","b) DENSE_RANK()","c) ROW_NUMBER()","d) NTILE()"],"ans":"c"},
+{"q":"57. Which window function gives the rank but can skip ranks on ties?","opts":["a) RANK()","b) DENSE_RANK()","c) ROW_NUMBER()","d) PERCENT_RANK()"],"ans":"a"},
+{"q":"58. Which clause is used to partition rows for window functions?","opts":["a) PARTITION BY","b) GROUP BY","c) ORDER BY","d) WINDOW BY"],"ans":"a"},
+{"q":"59. Which SQL statement merges data (upsert) in many RDBMS?","opts":["a) MERGE","b) UPSERT","c) INSERT ... ON CONFLICT/ON DUPLICATE KEY","d) All of the above (varies by DBMS)"],"ans":"d"},
+{"q":"60. Which function returns the difference between current row and previous row?","opts":["a) LAG()","b) LEAD()","c) DELTA()","d) DIFF()"],"ans":"a"},
+{"q":"61. Which function returns the next row's value in a partition?","opts":["a) LAG()","b) LEAD()","c) NEXT()","d) FOLLOW()"],"ans":"b"},
+{"q":"62. Which clause is used to filter results after aggregation?","opts":["a) WHERE","b) HAVING","c) GROUP BY","d) FILTER"],"ans":"b"},
+{"q":"63. Which index type is typically used for equality lookups in many systems?","opts":["a) B-tree","b) Hash","c) GiST","d) R-tree"],"ans":"b"},
+{"q":"64. What is a covering index?","opts":["a) Index that covers all columns used by a query so table access is not needed","b) Index stored externally","c) Index with compression","d) Index on computed columns only"],"ans":"a"},
+{"q":"65. Which technique helps improve query performance by storing precomputed results?","opts":["a) View","b) Materialized view","c) Index","d) Trigger"],"ans":"b"},
+{"q":"66. Which SQL clause helps with pagination in many DBMS?","opts":["a) OFFSET ... FETCH / LIMIT ... OFFSET","b) ROWS ...","c) PAGE ...","d) SKIP ..."],"ans":"a"},
+{"q":"67. What does EXPLAIN do?","opts":["a) Executes the query and shows results","b) Shows the query execution plan","c) Optimizes the query automatically","d) Rewrites SQL to ANSI standard"],"ans":"b"},
+{"q":"68. Which statement creates a temporary table in many DBMS?","opts":["a) CREATE TEMPORARY TABLE","b) CREATE #temp","c) CREATE TABLE TEMP","d) Both a and DBMS-specific variants"],"ans":"d"},
+{"q":"69. Which SQL construct allows running multiple statements as a single logical unit?","opts":["a) Batch","b) Transaction","c) Procedure","d) Script"],"ans":"b"},
+{"q":"70. Which SQL feature allows you to automatically run code on table events like INSERT?","opts":["a) Procedure","b) Function","c) Trigger","d) Event"],"ans":"c"},
+{"q":"71. Which operator is faster for membership checks on large lists when indexed?","opts":["a) IN","b) = ANY","c) EXISTS with subquery","d) OR chain"],"ans":"c"},
+{"q":"72. Which join returns all rows from left table and matching rows from right table?","opts":["a) INNER JOIN","b) LEFT OUTER JOIN","c) RIGHT OUTER JOIN","d) FULL OUTER JOIN"],"ans":"b"},
+{"q":"73. Which join returns rows only present in left but not in right (anti-join pattern)?","opts":["a) LEFT JOIN with WHERE right.col IS NULL","b) RIGHT JOIN with WHERE left.col IS NULL","c) INNER JOIN","d) FULL JOIN"],"ans":"a"},
+{"q":"74. Which SQL feature can be used for horizontal partitioning of large tables?","opts":["a) Partitioning by range / list / hash","b) Vertical partitioning","c) Sharding only","d) Clustering only"],"ans":"a"},
+{"q":"75. When would you use a partial (filtered) index?","opts":["a) When queries only touch a subset of rows defined by a predicate","b) When you want to index all rows","c) When you want compression","d) None of the above"],"ans":"a"},
+
+/* 76-100 Advanced */
+{"q":"76. What is a correlated subquery?","opts":["a) A subquery that runs once","b) A subquery that references columns from the outer query","c) A subquery that uses aggregates only","d) A subquery that returns multiple columns always"],"ans":"b"},
+{"q":"77. What are window frames (e.g., ROWS BETWEEN ...)?","opts":["a) They define groups for GROUP BY","b) They set the frame of rows for window function calculations","c) They partition result sets physically","d) They define index ranges"],"ans":"b"},
+{"q":"78. Which function gives percentile rank in window functions?","opts":["a) PERCENT_RANK()","b) PERCENTILE()", "c) NTILE()", "d) RANK()"],"ans":"a"},
+{"q":"79. What does OLAP stand for compared to OLTP?","opts":["a) Online Analytical Processing vs Online Transaction Processing","b) Offline Analytical Processing vs Online Transaction Processing","c) Online Analytical Processing vs Offline Transaction Processing","d) Only Logical Analytical Processing vs Operational"],"ans":"a"},
+{"q":"80. What is normalization (e.g., 1NF, 2NF, 3NF)?","opts":["a) Process of structuring data to reduce redundancy","b) Process of denormalizing data","c) A type of index","d) A stored procedure pattern"],"ans":"a"},
+{"q":"81. What is denormalization used for?","opts":["a) To reduce redundancy","b) To increase normalization levels","c) To improve read performance at cost of redundancy","d) To enforce constraints"],"ans":"c"},
+{"q":"82. What does a transaction savepoint allow?","opts":["a) Setting a bookmark to roll back part of a transaction","b) Committing part of a transaction separately","c) Auto-committing changes only","d) Creating a temporary table"],"ans":"a"},
+{"q":"83. Which isolation level offers the strictest guarantees (but lowest concurrency)?","opts":["a) READ UNCOMMITTED","b) READ COMMITTED","c) REPEATABLE READ","d) SERIALIZABLE"],"ans":"d"},
+{"q":"84. What is a deadlock?","opts":["a) When a transaction rolls back automatically","b) When two or more transactions wait forever for resources held by each other","c) When a query times out","d) When the DBMS restarts"],"ans":"b"},
+{"q":"85. Which index type is better for range scans and ordered retrieval?","opts":["a) Hash","b) B-tree (balanced tree)","c) Full-table scan","d) Bitmap only"],"ans":"b"},
+{"q":"86. What is a covering index? (advanced nuance)","opts":["a) Index which contains all columns required by a query, avoiding table lookup","b) Index which spans multiple tables","c) Clustered index only","d) An index used only by optimizer hints"],"ans":"a"},
+{"q":"87. Which SQL feature can help speed up analytical queries by pre-aggregating data?","opts":["a) Indexed view / materialized view","b) Trigger","c) Foreign key","d) Constraint"],"ans":"a"},
+{"q":"88. What is sharding?","opts":["a) Vertical scaling of CPU","b) Horizontal partitioning of data across multiple servers","c) Using views to split data","d) Index replication"],"ans":"b"},
+{"q":"89. Which command in many systems analyzes table statistics for optimizer?","opts":["a) ANALYZE / ANALYZE TABLE / VACUUM ANALYZE","b) EXPLAIN ANALYZE only","c) STATS UPDATE","d) RUN OPTIMIZER"],"ans":"a"},
+{"q":"90. What is a function-based index?","opts":["a) Index built on expression or function of columns","b) Index on functions only","c) Index that stores function code","d) Index used in procedural SQL"],"ans":"a"},
+{"q":"91. Which SQL window function would you use to compute moving average?","opts":["a) SUM() OVER (ORDER BY x ROWS BETWEEN n PRECEDING AND CURRENT ROW)","b) AVG() with no OVER clause","c) GROUP BY moving average","d) HAVING moving average"],"ans":"a"},
+{"q":"92. What is a materialized view?","opts":["a) A view stored physically for fast access (needs refresh)","b) A regular view with no storage","c) A temp table with same name as view","d) A synonym"],"ans":"a"},
+{"q":"93. What is the purpose of an execution plan?","opts":["a) To list the SQL text only","b) To show how the database will execute a query so you can tune it","c) To automatically rewrite queries for speed","d) To profile disk usage only"],"ans":"b"},
+{"q":"94. What is cardinality in database indexing context?","opts":["a) Number of columns in an index","b) Number of unique values in a column","c) Depth of B-tree","d) Size in MB"],"ans":"b"},
+{"q":"95. What is an anti-join?","opts":["a) A join that returns rows present in both tables","b) A technique to get rows in left table with no matching rows in right","c) A synonym for full outer join","d) A self-join variant"],"ans":"b"},
+{"q":"96. What is the primary risk of dynamic SQL built by concatenation of user input?","opts":["a) Slower performance only","b) SQL injection vulnerability","c) Too many queries","d) It will always fail"],"ans":"b"},
+{"q":"97. Which command can be used to prevent accidental long-running transactions from holding locks?","opts":["a) Set lock timeout or statement timeout","b) Use more indexes","c) Increase transaction logs only","d) Disable transactions"],"ans":"a"},
+{"q":"98. What is the benefit of using prepared statements?","opts":["a) Prevention of SQL injection, repeated plan reuse, and parameter binding","b) They always run faster regardless","c) They avoid needing indexes","d) They auto-scale DB servers"],"ans":"a"},
+{"q":"99. Which advanced SQL feature helps compute cumulative sums partitioned by group?","opts":["a) SUM()","b) SUM() OVER (PARTITION BY ... ORDER BY ... ROWS UNBOUNDED PRECEDING)","c) GROUP BY SUM","d) HAVING SUM"],"ans":"b"},
+{"q":"100. Which technique helps speed up lookup-heavy workloads using SSD-friendly structure?","opts":["a) Columnstore indexes / OLAP-friendly stores","b) Rowstore only","c) Repartitioning only","d) Removing indexes"],"ans":"a"}
+]; // end QUESTIONS
+
+/* ==========================
+   Rendering & Logic
+   ========================== */
+
+const form = document.getElementById('quizForm');
+const totalCountEl = document.getElementById('totalCount');
+const answeredCountEl = document.getElementById('answeredCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const answerKeyEl = document.getElementById('answerKey');
+totalCountEl.textContent = QUESTIONS.length;
+
+function createQuestionCard(idx,item){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'qcard';
+  const qhead = document.createElement('div');
+  qhead.className = 'qhead';
+  qhead.textContent = idx + '. ' + item.q.replace(/^[0-9]+\\.\\s*/,'');
+  wrapper.appendChild(qhead);
+  const opts = document.createElement('div');
+  opts.className = 'opts';
+  item.opts.forEach(optText=>{
+    const letter = optText.trim().slice(0,1).toLowerCase();
+    const label = document.createElement('label');
+    // safe display
+    const safe = optText.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    label.innerHTML = `<input type="radio" name="q${idx}" value="${letter}"> ${safe}`;
+    opts.appendChild(label);
+  });
+  wrapper.appendChild(opts);
+  return wrapper;
+}
+
+// render all questions (single page)
+QUESTIONS.forEach((q,i)=>{
+  form.appendChild(createQuestionCard(i+1,q));
+});
+
+// counting answered
+function countAnswered(){
+  let count = 0;
+  for(let i=1;i<=QUESTIONS.length;i++){
+    const radios = document.getElementsByName('q'+i);
+    for(const r of radios) if(r.checked){ count++; break; }
+  }
+  answeredCountEl.textContent = count;
+}
+form.addEventListener('change', countAnswered);
+
+// clear button
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  if(!confirm('Clear all answers?')) return;
+  form.reset();
+  document.getElementById('result').style.display = 'none';
+  countAnswered();
+});
+
+// build answer key (hidden by default)
+(function buildAnswerKey(){
+  let html = '<h3>Answer Key (1–' + QUESTIONS.length + ')</h3><ol>';
+  for(let i=0;i<QUESTIONS.length;i++){
+    html += `<li>Q${i+1}: ${QUESTIONS[i].ans.toUpperCase()}</li>`;
+  }
+  html += '</ol>';
+  answerKeyEl.innerHTML = html;
+})();
+
+document.getElementById('toggleKeyBtn').addEventListener('click', function(){
+  const showing = answerKeyEl.style.display === 'block';
+  answerKeyEl.style.display = showing ? 'none' : 'block';
+  this.textContent = showing ? 'Show Answers' : 'Hide Answers';
+  if(!showing) answerKeyEl.scrollIntoView({behavior:'smooth'});
+});
+
+// grading
+function gradeQuiz(auto=false){
+  let score = 0;
+  for(let i=0;i<QUESTIONS.length;i++){
+    const idx = i+1;
+    const radios = document.getElementsByName('q'+idx);
+    let selected = null;
+    for(const r of radios) if(r.checked) selected = r.value;
+    if(selected === QUESTIONS[i].ans) score++;
+  }
+  const percent = (score / QUESTIONS.length * 100).toFixed(1);
+  const resultEl = document.getElementById('result');
+  let html = `<h3>Your final score: ${score} / ${QUESTIONS.length} (${percent}%)</h3>`;
+  html += auto ? `<p style="color:var(--danger)">Auto-submitted — time expired.</p>` : `<p class="meta">Final score shown.</p>`;
+  resultEl.innerHTML = html;
+  resultEl.style.display = 'block';
+  resultEl.scrollIntoView({behavior:'smooth'});
+}
+
+// manual submit
+document.getElementById('submitBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  if(!confirm('Submit quiz now?')) return;
+  gradeQuiz(false);
+});
+
+// 90-minute countdown timer (5400 seconds)
+let totalSeconds = 90 * 60;
+let timerInterval = null;
+
+function formatTime(s){
+  const mm = Math.floor(s/60);
+  const ss = s % 60;
+  return String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+}
+
+function startTimer(){
+  timerDisplay.textContent = formatTime(totalSeconds);
+  timerInterval = setInterval(()=>{
+    totalSeconds--;
+    if(totalSeconds <= 0){
+      clearInterval(timerInterval);
+      timerDisplay.textContent = '00:00';
+      // auto-submit
+      gradeQuiz(true);
+      // disable inputs
+      for(let i=1;i<=QUESTIONS.length;i++){
+        const radios = document.getElementsByName('q'+i);
+        for(const r of radios) r.disabled = true;
+      }
+      alert('Time is up — the quiz has been auto-submitted.');
+      return;
+    }
+    timerDisplay.textContent = formatTime(totalSeconds);
+  },1000);
+}
+
+// start on load
+window.addEventListener('load', ()=>{
+  startTimer();
+  countAnswered();
+});
+  </script>
+</body>
+</html>
